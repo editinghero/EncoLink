@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EncoLink - Advanced Link Management</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assests/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="assests/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assests/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="assests/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assests/apple-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assests/android-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assests/android-512x512.png">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">🔗EncoLink</h1>
+                <nav class="nav">
+                    <button class="nav-btn" id="settingsBtn">Settings</button>
+                    <button class="nav-btn" id="helpBtn">Help</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Encryption Page -->
+            <div id="encryptionPage" class="page active">
+                <!-- Hero Section -->
+                <div class="hero-section">
+                    <div class="glass-card hero-card">
+                        <h1 class="hero-title">EncoLink</h1>
+                        <p class="hero-subtitle">Advanced Link Management & Encryption</p>
+                        <div class="security-badge">
+                            <span class="security-icon">🛡️</span>
+                            <span>AES-256 Encryption</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Encryption Modes -->
+                <div class="encryption-modes">
+                    <div class="mode-tabs">
+                        <button class="tab-btn active" data-mode="single">Single Link</button>
+                        <button class="tab-btn" data-mode="bulk">Bulk Encrypt</button>
+                        <button class="tab-btn" data-mode="clipboard">From Clipboard</button>
+                    </div>
+
+                    <!-- Single Link Mode -->
+                    <div id="singleMode" class="glass-card mode-content active">
+                        <div class="form-group">
+                            <label for="singleUrl" class="form-label">Enter URL to Encrypt</label>
+                            <input type="url" id="singleUrl" class="form-input" placeholder="https://example.com">
+                            <div class="url-validation" id="singleUrlValidation"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="singlePassword" class="form-label">Encryption Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="singlePassword" class="form-input" placeholder="Enter strong password">
+                                <button type="button" class="password-toggle" id="singlePasswordToggle">👁️</button>
+                            </div>
+                            <div class="password-strength" id="singlePasswordStrength"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="encryptSingleBtn">🔒 Encrypt Link</button>
+                            <button class="btn btn-secondary" id="generatePasswordBtn">Generate Password</button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Mode -->
+                    <div id="bulkMode" class="glass-card mode-content">
+                        <div class="form-group">
+                            <label for="bulkUrls" class="form-label">Enter URLs (one per line)</label>
+                            <textarea id="bulkUrls" class="form-textarea" rows="8" placeholder="https://example1.com&#10;https://example2.com&#10;https://example3.com"></textarea>
+                            <div class="url-count" id="bulkUrlCount">0 URLs detected</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bulkPassword" class="form-label">Encryption Password (for all links)</label>
+                            <div class="password-input-group">
+                                <input type="password" id="bulkPassword" class="form-input" placeholder="Enter strong password">
+                                <button type="button" class="password-toggle" id="bulkPasswordToggle">👁️</button>
+                            </div>
+                            <div class="password-strength" id="bulkPasswordStrength"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="encryptBulkBtn">🔒 Encrypt All Links</button>
+                            <button class="btn btn-secondary" id="generateBulkPasswordBtn">Generate Password</button>
+                        </div>
+                    </div>
+
+                    <!-- Clipboard Mode -->
+                    <div id="clipboardMode" class="glass-card mode-content">
+                        <div class="clipboard-section">
+                            <div class="clipboard-info">
+                                <h3>📋 Clipboard Detection</h3>
+                                <p>Automatically detect and encrypt URLs from your clipboard</p>
+                            </div>
+                            <button class="btn btn-outline" id="readClipboardBtn">📋 Read from Clipboard</button>
+                        </div>
+                        <div class="clipboard-results" id="clipboardResults" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Detected URLs</label>
+                                <div class="detected-urls" id="detectedUrls"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="clipboardPassword" class="form-label">Encryption Password</label>
+                                <div class="password-input-group">
+                                    <input type="password" id="clipboardPassword" class="form-input" placeholder="Enter strong password">
+                                    <button type="button" class="password-toggle" id="clipboardPasswordToggle">👁️</button>
+                                </div>
+                                <div class="password-strength" id="clipboardPasswordStrength"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="encryptClipboardBtn">🔒 Encrypt Selected URLs</button>
+                                <button class="btn btn-secondary" id="generateClipboardPasswordBtn">Generate Password</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="results-section" style="display: none;">
+                    <div class="glass-card">
+                        <h3>🎉 Encryption Complete!</h3>
+                        <div id="encryptionResults" class="encryption-results"></div>
+                        <div class="results-actions">
+                            <button class="btn btn-secondary" id="newEncryptionBtn">Encrypt Another</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decryption Page -->
+            <div id="decryptionPage" class="page">
+                <div class="decryption-section">
+                    <div class="glass-card">
+                        <div class="decryption-header">
+                            <h2>🔓 Decrypt Secure Link</h2>
+                            <p>Enter the password to decrypt and access the protected link</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="decryptPassword" class="form-label">Decryption Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="decryptPassword" class="form-input" placeholder="Enter password" autocomplete="off">
+                                <button type="button" class="password-toggle" id="decryptPasswordToggle">👁️</button>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="decryptBtn">🔓 Decrypt & Go</button>
+                            <button class="btn btn-outline" id="decryptOnlyBtn">👁️ Decrypt Only</button>
+                        </div>
+                        <div class="decryption-attempts" id="decryptionAttempts"></div>
+                    </div>
+
+                    <!-- Error Options -->
+                    <div id="decryptionError" class="glass-card error-options" style="display: none;">
+                        <div class="error-header">
+                            <h3>❌ Incorrect Password</h3>
+                            <p>The password you entered is incorrect. What would you like to do?</p>
+                        </div>
+                        <div class="error-actions">
+                            <button class="btn btn-primary" id="tryAgainBtn">🔄 Try Again</button>
+                            <button class="btn btn-outline" id="encryptNewBtn">🔒 Encrypt a New Link</button>
+                            <button class="btn btn-secondary" id="contactHelpBtn">❓ Get Help</button>
+                        </div>
+                    </div>
+
+                    <!-- Success Section -->
+                    <div id="decryptionSuccess" class="glass-card success-section" style="display: none;">
+                        <div class="success-header">
+                            <h3>✅ Decryption Successful!</h3>
+                            <div class="decrypted-url" id="decryptedUrl"></div>
+                        </div>
+                        <div class="redirect-countdown" id="redirectCountdown"></div>
+                        <div class="success-actions">
+                            <button class="btn btn-primary" id="goNowBtn">🚀 Go Now</button>
+                            <button class="btn btn-outline" id="cancelRedirectBtn">❌ Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>⚙️ Settings</h3>
+                <button class="modal-close" id="closeSettingsModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <label class="settings-label">
+                        <input type="checkbox" id="autoRedirect" checked>
+                        Auto-redirect after successful decryption
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">Redirect delay (seconds)</label>
+                    <input type="number" id="redirectDelay" class="form-input" value="3" min="1" max="10">
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">
+                        <input type="checkbox" id="showPasswordStrength" checked>
+                        Show password strength indicator
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>❓ Help & FAQ</h3>
+                <button class="modal-close" id="closeHelpModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h4>🔒 How It Works</h4>
+                    <p>EncoLink uses AES-256 encryption to protect your URLs. When you encrypt a link, it creates a secure URL that can only be accessed with the correct password.</p>
+                </div>
+                <div class="help-section">
+                    <h4>🛡️ Security</h4>
+                    <p>All encryption happens in your browser. No passwords or URLs are sent to any server. Your data remains completely private.</p>
+                </div>
+                <div class="help-section">
+                    <h4>📋 Clipboard</h4>
+                    <p>Use the clipboard feature to quickly detect and encrypt multiple URLs at once. Simply copy text containing URLs and let EncoLink find them automatically.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
