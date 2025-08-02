@@ -36,6 +36,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Developer
 
-Developed with ❤️ by [YourName](https://github.com/editinghero)
+Developed with ❤️ by [AstralQuarks](https://github.com/editinghero)
 
 ---
