@@ -14,6 +14,7 @@ Website - https://encolink.pages.dev
 
 -Main Interface
 
+<img width="963" height="750" alt="image" src="https://github.com/user-attachments/assets/d0e090ae-1c25-4266-8db5-ed1f6dd469a4" />
 
 
 
@@ -35,6 +36,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Developer
 
-Developed with ❤️ by [YourName](https://github.com/editinghero)
+Developed with ❤️ by [AstralQuarks](https://github.com/editinghero)
 
 ---
