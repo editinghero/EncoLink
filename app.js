@@ -540,6 +540,32 @@ class SecureLinkApp {
                 this.saveSettings();
             });
         }
+
+        // Enter key shortcuts for Encrypt/Decrypt actions
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activeEl = document.activeElement;
+                // Allow line breaks inside textareas
+                if (activeEl && activeEl.tagName === 'TEXTAREA') return;
+
+                e.preventDefault();
+
+                if (this.currentPage === 'encryption') {
+                    const activeMode = document.querySelector('.mode-content.active');
+                    if (activeMode) {
+                        if (activeMode.id === 'singleMode') {
+                            this.encryptSingle();
+                        } else if (activeMode.id === 'bulkMode') {
+                            this.encryptBulk();
+                        } else if (activeMode.id === 'clipboardMode') {
+                            this.encryptClipboard();
+                        }
+                    }
+                } else if (this.currentPage === 'decryption') {
+                    this.decryptAndRedirect();
+                }
+            }
+        });
     }
 
     // Mode Switching
@@ -760,6 +786,14 @@ class SecureLinkApp {
         
         section.style.display = 'block';
         section.scrollIntoView({ behavior: 'smooth' });
+
+        // Auto-copy encrypted URLs to clipboard
+        const urlsToCopy = results.map(r => r.decryptUrl).join('\n');
+        this.writeClipboard(urlsToCopy).then(success => {
+            if (success) {
+                this.showToast(`${results.length} encrypted URL${results.length>1?'s':''} copied to clipboard`, 'success');
+            }
+        });
     }
 
     async copyToClipboard(text, button) {

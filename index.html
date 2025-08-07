@@ -22,7 +22,7 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <h1 class="logo">🔗EncoLink</h1>
+                <h1 class="logo"><a href="index.html">🔗EncoLink</a></h1>
                 <nav class="nav">
                     <button class="nav-btn" id="settingsBtn">Settings</button>
                     <button class="nav-btn" id="helpBtn">Help</button>
@@ -42,7 +42,6 @@
                         <h1 class="hero-title">EncoLink</h1>
                         <p class="hero-subtitle">Advanced Link Management & Encryption</p>
                         <div class="security-badge">
-                            <span class="security-icon">🛡️</span>
                             <span>AES-256 Encryption</span>
                         </div>
                     </div>
@@ -72,7 +71,7 @@
                             <div class="password-strength" id="singlePasswordStrength"></div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="encryptSingleBtn">🔒 Encrypt Link</button>
+                            <button class="btn btn-primary" id="encryptSingleBtn">Encrypt Link</button>
                             <button class="btn btn-secondary" id="generatePasswordBtn">Generate Password</button>
                         </div>
                     </div>
@@ -93,7 +92,7 @@
                             <div class="password-strength" id="bulkPasswordStrength"></div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="encryptBulkBtn">🔒 Encrypt All Links</button>
+                            <button class="btn btn-primary" id="encryptBulkBtn">Encrypt All Links</button>
                             <button class="btn btn-secondary" id="generateBulkPasswordBtn">Generate Password</button>
                         </div>
                     </div>
@@ -102,10 +101,10 @@
                     <div id="clipboardMode" class="glass-card mode-content">
                         <div class="clipboard-section">
                             <div class="clipboard-info">
-                                <h3>📋 Clipboard Detection</h3>
+                                <h3>Clipboard Detection</h3>
                                 <p>Automatically detect and encrypt URLs from your clipboard</p>
                             </div>
-                            <button class="btn btn-outline" id="readClipboardBtn">📋 Read from Clipboard</button>
+                            <button class="btn btn-outline" id="readClipboardBtn">Read from Clipboard</button>
                         </div>
                         <div class="clipboard-results" id="clipboardResults" style="display: none;">
                             <div class="form-group">
@@ -121,7 +120,7 @@
                                 <div class="password-strength" id="clipboardPasswordStrength"></div>
                             </div>
                             <div class="form-actions">
-                                <button class="btn btn-primary" id="encryptClipboardBtn">🔒 Encrypt Selected URLs</button>
+                                <button class="btn btn-primary" id="encryptClipboardBtn">Encrypt Selected URLs</button>
                                 <button class="btn btn-secondary" id="generateClipboardPasswordBtn">Generate Password</button>
                             </div>
                         </div>
@@ -145,7 +144,7 @@
                 <div class="decryption-section">
                     <div class="glass-card">
                         <div class="decryption-header">
-                            <h2>🔓 Decrypt Secure Link</h2>
+                            <h2>Decrypt Secure Link</h2>
                             <p>Enter the password to decrypt and access the protected link</p>
                         </div>
                         <div class="form-group">
@@ -156,8 +155,8 @@
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="decryptBtn">🔓 Decrypt & Go</button>
-                            <button class="btn btn-outline" id="decryptOnlyBtn">👁️ Decrypt Only</button>
+                            <button class="btn btn-primary" id="decryptBtn">Decrypt & Go</button>
+                            <button class="btn btn-outline" id="decryptOnlyBtn">Decrypt Only</button>
                         </div>
                         <div class="decryption-attempts" id="decryptionAttempts"></div>
                     </div>
@@ -165,13 +164,13 @@
                     <!-- Error Options -->
                     <div id="decryptionError" class="glass-card error-options" style="display: none;">
                         <div class="error-header">
-                            <h3>❌ Incorrect Password</h3>
+                            <h3>Incorrect Password</h3>
                             <p>The password you entered is incorrect. What would you like to do?</p>
                         </div>
                         <div class="error-actions">
-                            <button class="btn btn-primary" id="tryAgainBtn">🔄 Try Again</button>
-                            <button class="btn btn-outline" id="encryptNewBtn">🔒 Encrypt a New Link</button>
-                            <button class="btn btn-secondary" id="contactHelpBtn">❓ Get Help</button>
+                            <button class="btn btn-primary" id="tryAgainBtn">Try Again</button>
+                            <button class="btn btn-outline" id="encryptNewBtn">Encrypt a New Link</button>
+                            <button class="btn btn-secondary" id="contactHelpBtn">Get Help</button>
                         </div>
                     </div>
 
@@ -183,8 +182,8 @@
                         </div>
                         <div class="redirect-countdown" id="redirectCountdown"></div>
                         <div class="success-actions">
-                            <button class="btn btn-primary" id="goNowBtn">🚀 Go Now</button>
-                            <button class="btn btn-outline" id="cancelRedirectBtn">❌ Cancel</button>
+                            <button class="btn btn-primary" id="goNowBtn">Go Now</button>
+                            <button class="btn btn-outline" id="cancelRedirectBtn">Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -226,20 +225,20 @@
         <div class="modal-overlay"></div>
         <div class="modal-content glass-card">
             <div class="modal-header">
-                <h3>❓ Help & FAQ</h3>
+                <h3>Help & FAQ</h3>
                 <button class="modal-close" id="closeHelpModal">✕</button>
             </div>
             <div class="modal-body">
                 <div class="help-section">
-                    <h4>🔒 How It Works</h4>
+                    <h4>How It Works</h4>
                     <p>EncoLink uses AES-256 encryption to protect your URLs. When you encrypt a link, it creates a secure URL that can only be accessed with the correct password.</p>
                 </div>
                 <div class="help-section">
-                    <h4>🛡️ Security</h4>
+                    <h4>Security</h4>
                     <p>All encryption happens in your browser. No passwords or URLs are sent to any server. Your data remains completely private.</p>
                 </div>
                 <div class="help-section">
-                    <h4>📋 Clipboard</h4>
+                    <h4>Clipboard</h4>
                     <p>Use the clipboard feature to quickly detect and encrypt multiple URLs at once. Simply copy text containing URLs and let EncoLink find them automatically.</p>
                 </div>
             </div>

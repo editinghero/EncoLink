@@ -1202,9 +1202,6 @@ body {
   }
 }
 
-ackground: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-transition: left 0.5s ease;
-}
 
 .btn:hover::before {
   left: 100%;
@@ -1699,7 +1696,7 @@ transition: left 0.5s ease;
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
-}
+
 
 .btn- secondary:hover {
   background: var(--color-secondary-hover);
@@ -2191,4 +2188,115 @@ transition: left 0.5s ease;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ---------------- SecureLink Custom Overrides ---------------- */
+:root {
+  /* Primary */
+  --color-primary: #ff7e5f;
+  --color-primary-hover: #e76d51;
+  --color-primary-active: #d35f49;
+  --color-btn-primary-text: #ffffff;
+
+  /* Secondary */
+  --color-secondary: rgba(70, 58, 65, 0.12);
+  --color-secondary-hover: rgba(70, 58, 65, 0.20);
+  --color-secondary-active: rgba(70, 58, 65, 0.25);
+  --color-btn-secondary-text: #ffffff;
+
+  /* Accent */
+  --color-accent: #feb47b;
+  --color-accent-hover: #e19e6d;
+  --color-accent-active: #c98860;
+  --color-accent-foreground: #2a2024;
+
+  --color-warning: var(--color-accent);
+
+  /* Override legacy teal palette */
+  --color-teal-300: #ff9776;
+  --color-teal-400: #ff8d6c;
+  --color-teal-500: #ff7e5f;
+  --color-teal-600: #e76d51;
+  --color-teal-700: #d35f49;
+  --color-teal-500-rgb: 255, 126, 95;
+  --color-teal-400-rgb: 255, 141, 108;
+  --color-teal-300-rgb: 255, 151, 118;
+  --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+  --color-bg-1: rgba(var(--color-teal-500-rgb), 0.08);
+}
+
+/* Button tweaks */
+.btn-primary,
+.btn.btn-primary {
+  background: var(--color-primary) !important;
+  color: var(--color-btn-primary-text) !important;
+  border-color: var(--color-primary);
+}
+.btn-primary:hover,
+.btn.btn-primary:hover { background: var(--color-primary-hover) !important; }
+.btn-primary:active,
+.btn.btn-primary:active { background: var(--color-primary-active) !important; }
+
+.btn-secondary,
+.btn.btn-secondary {
+  background: var(--color-secondary) !important;
+  color: var(--color-btn-primary-text) !important;
+  border-color: var(--color-secondary-hover) !important;
+}
+.btn-secondary:hover,
+.btn.btn-secondary:hover { background: var(--color-secondary-hover) !important; }
+.btn-secondary:active,
+.btn.btn-secondary:active { background: var(--color-secondary-active) !important; }
+
+/* Make specific secondary buttons text white */
+#cancelBtn,
+#decryptOnlyBtn,
+#clipboardReadBtn {
+  color: var(--color-btn-primary-text) !important;
+}
+
+/* Copy Button */
+.copy-btn {
+  background: var(--color-primary) !important;
+  color: var(--color-btn-primary-text) !important;
+  border: none !important;
+}
+.copy-btn:hover { background: var(--color-primary-hover) !important; }
+.copy-btn.copied {
+  background: var(--color-primary-active) !important;
+  color: var(--color-btn-primary-text) !important;
+}
+
+/* Remove old blue backgrounds in results */
+.result-encrypted {
+  background: var(--color-secondary) !important;
+  border: 1px solid var(--color-secondary-hover) !important;
+}
+.result-url {
+  color: var(--color-text) !important;
+}
+
+/* Outline buttons */
+.btn-outline {
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent-foreground) !important;
+}
+.btn-outline:hover { background: var(--color-accent) !important; color: var(--color-btn-primary-text) !important; }
+
+/* Specific buttons need white text regardless of outline style */
+#readClipboardBtn,
+#cancelRedirectBtn,
+#decryptOnlyBtn {
+  color: var(--color-btn-primary-text) !important;
+}
+#readClipboardBtn:hover,
+#cancelRedirectBtn:hover,
+#decryptOnlyBtn:hover {
+  color: var(--color-btn-primary-text) !important;
+}
+
+/* Update primary button hover shadow to match new palette */
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  box-shadow: 0 8px 25px rgba(var(--color-teal-500-rgb), 0.35) !important;
 }
