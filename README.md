@@ -1,4 +1,4 @@
-# EncoLink 🔗
+# EncoLink
 
 A modern link management application with stunning design and powerful features, built with cutting-edge technologies.
 
