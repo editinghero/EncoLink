@@ -22,8 +22,11 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <h1 class="logo"><a href="index.html">🔗EncoLink</a></h1>
+                <h1 class="logo"><a href="index.html">EncoLink</a></h1>
                 <nav class="nav">
+                    <button class="nav-btn" id="themeToggle">
+                        <span id="themeIcon">Dark</span>
+                    </button>
                     <button class="nav-btn" id="settingsBtn">Settings</button>
                     <button class="nav-btn" id="helpBtn">Help</button>
                 </nav>
@@ -53,6 +56,7 @@
                         <button class="tab-btn active" data-mode="single">Single Link</button>
                         <button class="tab-btn" data-mode="bulk">Bulk Encrypt</button>
                         <button class="tab-btn" data-mode="clipboard">From Clipboard</button>
+                        <button class="tab-btn" data-mode="timelock">Time-Locked</button>
                     </div>
 
                     <!-- Single Link Mode -->
@@ -66,13 +70,18 @@
                             <label for="singlePassword" class="form-label">Encryption Password</label>
                             <div class="password-input-group">
                                 <input type="password" id="singlePassword" class="form-input" placeholder="Enter strong password">
-                                <button type="button" class="password-toggle" id="singlePasswordToggle">👁️</button>
+                                <button type="button" class="password-toggle" id="singlePasswordToggle">Show</button>
                             </div>
                             <div class="password-strength" id="singlePasswordStrength"></div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="encryptSingleBtn">Encrypt Link</button>
-                            <button class="btn btn-secondary" id="generatePasswordBtn">Generate Password</button>
+                            <button class="btn btn-primary" id="encryptSingleBtn">
+                                <span class="btn-text">Encrypt Link</span>
+                                <span class="btn-loading" style="display: none;">Encrypting...</span>
+                            </button>
+                            <button class="btn btn-secondary" id="generatePasswordBtn">
+                                <span class="btn-text">Generate Password</span>
+                            </button>
                         </div>
                     </div>
 
@@ -87,13 +96,18 @@
                             <label for="bulkPassword" class="form-label">Encryption Password (for all links)</label>
                             <div class="password-input-group">
                                 <input type="password" id="bulkPassword" class="form-input" placeholder="Enter strong password">
-                                <button type="button" class="password-toggle" id="bulkPasswordToggle">👁️</button>
+                                <button type="button" class="password-toggle" id="bulkPasswordToggle">Show</button>
                             </div>
                             <div class="password-strength" id="bulkPasswordStrength"></div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="encryptBulkBtn">Encrypt All Links</button>
-                            <button class="btn btn-secondary" id="generateBulkPasswordBtn">Generate Password</button>
+                            <button class="btn btn-primary" id="encryptBulkBtn">
+                                <span class="btn-text">Encrypt All Links</span>
+                                <span class="btn-loading" style="display: none;">Encrypting...</span>
+                            </button>
+                            <button class="btn btn-secondary" id="generateBulkPasswordBtn">
+                                <span class="btn-text">Generate Password</span>
+                            </button>
                         </div>
                     </div>
 
@@ -104,7 +118,9 @@
                                 <h3>Clipboard Detection</h3>
                                 <p>Automatically detect and encrypt URLs from your clipboard</p>
                             </div>
-                            <button class="btn btn-outline" id="readClipboardBtn">Read from Clipboard</button>
+                            <button class="btn btn-outline" id="readClipboardBtn">
+                                <span class="btn-text">Read from Clipboard</span>
+                            </button>
                         </div>
                         <div class="clipboard-results" id="clipboardResults" style="display: none;">
                             <div class="form-group">
@@ -115,14 +131,83 @@
                                 <label for="clipboardPassword" class="form-label">Encryption Password</label>
                                 <div class="password-input-group">
                                     <input type="password" id="clipboardPassword" class="form-input" placeholder="Enter strong password">
-                                    <button type="button" class="password-toggle" id="clipboardPasswordToggle">👁️</button>
+                                    <button type="button" class="password-toggle" id="clipboardPasswordToggle">Show</button>
                                 </div>
                                 <div class="password-strength" id="clipboardPasswordStrength"></div>
                             </div>
                             <div class="form-actions">
-                                <button class="btn btn-primary" id="encryptClipboardBtn">Encrypt Selected URLs</button>
-                                <button class="btn btn-secondary" id="generateClipboardPasswordBtn">Generate Password</button>
+                                <button class="btn btn-primary" id="encryptClipboardBtn">
+                                    <span class="btn-text">Encrypt Selected URLs</span>
+                                    <span class="btn-loading" style="display: none;">Encrypting...</span>
+                                </button>
+                                <button class="btn btn-secondary" id="generateClipboardPasswordBtn">
+                                    <span class="btn-text">Generate Password</span>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Time-Locked Mode -->
+                    <div id="timelockMode" class="glass-card mode-content">
+                        <div class="timelock-header">
+                            <h3>Time-Locked Links</h3>
+                            <p>Restrict access to your links by specific datetime or daily time windows</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="timelockUrl" class="form-label">Enter URL to Time-Lock</label>
+                            <input type="url" id="timelockUrl" class="form-input" placeholder="https://example.com">
+                            <div class="url-validation" id="timelockUrlValidation"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="timelockPassword" class="form-label">Encryption Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="timelockPassword" class="form-input" placeholder="Enter strong password">
+                                <button type="button" class="password-toggle" id="timelockPasswordToggle">Show</button>
+                            </div>
+                            <div class="password-strength" id="timelockPasswordStrength"></div>
+                        </div>
+
+                        <div class="timelock-options">
+                            <div class="timelock-type-tabs">
+                                <button class="timelock-tab active" data-type="datetime">Specific DateTime</button>
+                                <button class="timelock-tab" data-type="daily">Daily Time Window</button>
+                            </div>
+
+                            <!-- Specific DateTime -->
+                            <div id="datetimeOption" class="timelock-option active">
+                                <div class="form-group">
+                                    <label for="unlockDatetime" class="form-label">Unlock Date & Time</label>
+                                    <input type="datetime-local" id="unlockDatetime" class="form-input">
+                                    <div class="timelock-info">Link will be blocked until this date and time</div>
+                                </div>
+                            </div>
+
+                            <!-- Daily Time Window -->
+                            <div id="dailyOption" class="timelock-option">
+                                <div class="time-window-group">
+                                    <div class="form-group">
+                                        <label for="startTime" class="form-label">Available From</label>
+                                        <input type="time" id="startTime" class="form-input" value="09:00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endTime" class="form-label">Available Until</label>
+                                        <input type="time" id="endTime" class="form-input" value="21:00">
+                                    </div>
+                                </div>
+                                <div class="timelock-info">Link will only work within this daily time window</div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="encryptTimelockBtn">
+                                <span class="btn-text">Create Time-Locked Link</span>
+                                <span class="btn-loading" style="display: none;">Creating...</span>
+                            </button>
+                            <button class="btn btn-secondary" id="generateTimelockPasswordBtn">
+                                <span class="btn-text">Generate Password</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -130,7 +215,7 @@
                 <!-- Results Section -->
                 <div id="resultsSection" class="results-section" style="display: none;">
                     <div class="glass-card">
-                        <h3>🎉 Encryption Complete!</h3>
+                        <h3>Encryption Complete!</h3>
                         <div id="encryptionResults" class="encryption-results"></div>
                         <div class="results-actions">
                             <button class="btn btn-secondary" id="newEncryptionBtn">Encrypt Another</button>
@@ -142,6 +227,19 @@
             <!-- Decryption Page -->
             <div id="decryptionPage" class="page">
                 <div class="decryption-section">
+                    <!-- Time Lock Status -->
+                    <div id="timelockStatus" class="glass-card timelock-status" style="display: none;">
+                        <div class="timelock-header">
+                            <h2 id="timelockTitle">Link Time-Locked</h2>
+                            <p id="timelockMessage">This link is currently restricted by time-based access controls.</p>
+                        </div>
+                        <div id="timelockCountdown" class="timelock-countdown"></div>
+                        <div class="timelock-actions">
+                            <button class="btn btn-outline" id="checkAgainBtn">Check Again</button>
+                            <button class="btn btn-secondary" id="backToHomeBtn">Back to Home</button>
+                        </div>
+                    </div>
+
                     <div class="glass-card">
                         <div class="decryption-header">
                             <h2>Decrypt Secure Link</h2>
@@ -151,12 +249,17 @@
                             <label for="decryptPassword" class="form-label">Decryption Password</label>
                             <div class="password-input-group">
                                 <input type="password" id="decryptPassword" class="form-input" placeholder="Enter password" autocomplete="off">
-                                <button type="button" class="password-toggle" id="decryptPasswordToggle">👁️</button>
+                                <button type="button" class="password-toggle" id="decryptPasswordToggle">Show</button>
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button class="btn btn-primary" id="decryptBtn">Decrypt & Go</button>
-                            <button class="btn btn-outline" id="decryptOnlyBtn">Decrypt Only</button>
+                            <button class="btn btn-primary" id="decryptBtn">
+                                <span class="btn-text">Decrypt & Go</span>
+                                <span class="btn-loading" style="display: none;">Decrypting...</span>
+                            </button>
+                            <button class="btn btn-outline" id="decryptOnlyBtn">
+                                <span class="btn-text">Decrypt Only</span>
+                            </button>
                         </div>
                         <div class="decryption-attempts" id="decryptionAttempts"></div>
                     </div>
@@ -177,7 +280,7 @@
                     <!-- Success Section -->
                     <div id="decryptionSuccess" class="glass-card success-section" style="display: none;">
                         <div class="success-header">
-                            <h3>✅ Decryption Successful!</h3>
+                            <h3>Decryption Successful!</h3>
                             <div class="decrypted-url" id="decryptedUrl"></div>
                         </div>
                         <div class="redirect-countdown" id="redirectCountdown"></div>
@@ -196,8 +299,8 @@
         <div class="modal-overlay"></div>
         <div class="modal-content glass-card">
             <div class="modal-header">
-                <h3>⚙️ Settings</h3>
-                <button class="modal-close" id="closeSettingsModal">✕</button>
+                <h3>Settings</h3>
+                <button class="modal-close" id="closeSettingsModal">×</button>
             </div>
             <div class="modal-body">
                 <div class="settings-group">
@@ -226,7 +329,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h3>Help & FAQ</h3>
-                <button class="modal-close" id="closeHelpModal">✕</button>
+                <button class="modal-close" id="closeHelpModal">×</button>
             </div>
             <div class="modal-body">
                 <div class="help-section">

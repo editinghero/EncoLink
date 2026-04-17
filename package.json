@@ -1,0 +1,9 @@
+{
+  "name": "encolink",
+  "version": "1.0.0",
+  "description": "SecureLink - URL Encryption App",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "private": true
+}

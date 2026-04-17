@@ -6,7 +6,7 @@ A modern link management application with stunning design and powerful features,
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Cross--Platform-lightgrey?style=for-the-badge)
 
-## 🚀 Quick Start
+##  Quick Start
 
 Website - https://encolink.pages.dev
 
@@ -19,7 +19,7 @@ Website - https://encolink.pages.dev
 
 
 
-## ✨ Features
+##  Features
 
 - **Link Management**: Organize and manage your links efficiently
 - **URL Shortening**: Create short, memorable links
@@ -30,12 +30,13 @@ Website - https://encolink.pages.dev
 
 
 
-## 📄 License
+##  License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Developer
+##  Developer
 
 Developed with ❤️ by [AstralQuarks](https://github.com/editinghero)
+Half AI Coded by Sonnet 4.5
 
 ---
