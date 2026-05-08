@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time API Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .test-section {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        h1 { color: #60a5fa; }
+        h2 { color: #818cf8; font-size: 18px; }
+        .result {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .info { border-left: 4px solid #3b82f6; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover { background: #4f46e5; }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .time-box {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .time-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #60a5fa;
+            margin: 10px 0;
+        }
+        .label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔒 Time API Security Test</h1>
+    <p>This page tests the time verification system used to prevent time-lock bypass.</p>
+
+    <div class="test-section">
+        <h2>1. Timezone Detection</h2>
+        <button onclick="testTimezone()">Test Timezone Detection</button>
+        <div id="timezoneResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Server Time Verification</h2>
+        <button onclick="testServerTime()">Fetch Server Time</button>
+        <div id="serverTimeResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Time Comparison (Device vs Server)</h2>
+        <button onclick="compareTime()">Compare Times</button>
+        <div id="comparisonResult"></div>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 10px;">
+            💡 Try changing your device time and click "Compare Times" to see the difference!
+        </p>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Time-Lock Simulation</h2>
+        <p style="font-size: 14px; color: #94a3b8;">Set a time 1 minute in the future:</p>
+        <input type="datetime-local" id="unlockTime" style="padding: 8px; border-radius: 6px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155;">
+        <button onclick="testTimeLock()">Test Time Lock</button>
+        <div id="timeLockResult"></div>
+    </div>
+
+    <script>
+        function getUserTimezone() {
+            try {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone;
+            } catch (error) {
+                return 'UTC';
+            }
+        }
+
+        function getTimezoneOffset() {
+            const offset = -new Date().getTimezoneOffset();
+            const hours = Math.floor(Math.abs(offset) / 60);
+            const minutes = Math.abs(offset) % 60;
+            const sign = offset >= 0 ? '+' : '-';
+            return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+
+        async function getRealTime() {
+            const timeAPIs = [
+                { url: 'https://worldtimeapi.org/api/ip', type: 'worldtime' },
+                { url: 'https://timeapi.io/api/time/current/zone?timeZone=UTC', type: 'timeapi' },
+                { url: 'http://worldclockapi.com/api/json/utc/now', type: 'worldclock' }
+            ];
+
+            for (const api of timeAPIs) {
+                try {
+                    const response = await fetch(api.url, { 
+                        cache: 'no-store',
+                        headers: { 'Cache-Control': 'no-cache' }
+                    });
+                    
+                    if (!response.ok) continue;
+                    
+                    const data = await response.json();
+                    
+                    let dateTimeStr;
+                    if (api.type === 'worldtime') {
+                        dateTimeStr = data.datetime;
+                        return { time: dateTimeStr, source: 'WorldTimeAPI' };
+                    } else if (api.type === 'timeapi') {
+                        dateTimeStr = data.dateTime;
+                        // Ensure UTC timezone indicator
+                        if (!dateTimeStr.includes('Z') && !dateTimeStr.includes('+') && !dateTimeStr.includes('-', 10)) {
+                            dateTimeStr = dateTimeStr + 'Z';
+                        }
+                        return { time: dateTimeStr, source: 'TimeAPI.io' };
+                    } else if (api.type === 'worldclock') {
+                        dateTimeStr = data.currentDateTime;
+                        if (!dateTimeStr.includes('Z') && !dateTimeStr.includes('+')) {
+                            dateTimeStr = dateTimeStr + 'Z';
+                        }
+                        return { time: dateTimeStr, source: 'WorldClockAPI' };
+                    }
+                } catch (error) {
+                    console.warn(`Failed to fetch from ${api.url}:`, error);
+                    continue;
+                }
+            }
+            
+            throw new Error('Unable to verify time from server');
+        }
+
+        function testTimezone() {
+            const timezone = getUserTimezone();
+            const offset = getTimezoneOffset();
+            
+            document.getElementById('timezoneResult').innerHTML = `
+                <div class="result success">
+                    <strong>Timezone:</strong> ${timezone}<br>
+                    <strong>Offset:</strong> ${offset}<br>
+                    <strong>Status:</strong> ✅ Successfully detected
+                </div>
+            `;
+        }
+
+        async function testServerTime() {
+            const resultDiv = document.getElementById('serverTimeResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Fetching server time...</div>';
+            
+            try {
+                const { time, source } = await getRealTime();
+                const serverDate = new Date(time);
+                const timezone = getUserTimezone();
+                const offset = getTimezoneOffset();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <strong>Raw Server Response:</strong> ${time}<br>
+                        <strong>Parsed as UTC:</strong> ${serverDate.toUTCString()}<br>
+                        <strong>Your Local Time:</strong> ${serverDate.toLocaleString()}<br>
+                        <strong>Your Timezone:</strong> ${timezone} (${offset})<br>
+                        <strong>Source:</strong> ${source}<br>
+                        <strong>Status:</strong> ✅ Successfully verified
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 10px; padding: 10px; background: #0f172a; border-radius: 6px;">
+                        💡 The server returns UTC time, which is automatically converted to your local timezone (${timezone}) for display.
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Status:</strong> ❌ Failed to verify time
+                    </div>
+                `;
+            }
+        }
+
+        async function compareTime() {
+            const resultDiv = document.getElementById('comparisonResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Comparing times...</div>';
+            
+            try {
+                const deviceTime = new Date();
+                const { time: serverTimeStr, source } = await getRealTime();
+                const serverTime = new Date(serverTimeStr);
+                
+                // Calculate actual time difference (should be minimal if device time is correct)
+                const diff = Math.abs(serverTime - deviceTime);
+                const diffSeconds = Math.floor(diff / 1000);
+                const diffMinutes = Math.floor(diffSeconds / 60);
+                
+                // Get timezone info
+                const timezone = getUserTimezone();
+                const offset = getTimezoneOffset();
+                
+                let warningMsg = '';
+                let statusClass = 'success';
+                
+                // Only warn if difference is more than 2 minutes (accounting for network delay)
+                if (diffMinutes > 2) {
+                    warningMsg = `<div style="color: #ef4444; margin-top: 10px;">⚠️ Large time difference detected! Your device time may be incorrect or manipulated.</div>`;
+                    statusClass = 'error';
+                }
+                
+                resultDiv.innerHTML = `
+                    <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">YOUR TIMEZONE</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #60a5fa;">${timezone} (${offset})</div>
+                    </div>
+                    <div class="comparison">
+                        <div class="time-box">
+                            <div class="label">Device Time (Local)</div>
+                            <div class="time-value">${deviceTime.toLocaleTimeString()}</div>
+                            <div style="font-size: 12px; color: #94a3b8;">${deviceTime.toLocaleDateString()}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">UTC: ${deviceTime.toUTCString().split(' ')[4]}</div>
+                        </div>
+                        <div class="time-box">
+                            <div class="label">Server Time (${source})</div>
+                            <div class="time-value">${serverTime.toLocaleTimeString()}</div>
+                            <div style="font-size: 12px; color: #94a3b8;">${serverTime.toLocaleDateString()}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">UTC: ${serverTime.toUTCString().split(' ')[4]}</div>
+                        </div>
+                    </div>
+                    <div class="result ${statusClass}">
+                        <strong>Time Difference:</strong> ${diffMinutes} minutes ${diffSeconds % 60} seconds<br>
+                        <strong>Status:</strong> ${diffMinutes > 2 ? '⚠️ Significant difference' : '✅ Times are synchronized'}
+                        ${warningMsg}
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 10px; padding: 10px; background: #0f172a; border-radius: 6px;">
+                        💡 <strong>Note:</strong> Both times are converted to your local timezone (${timezone}) for display. 
+                        The comparison is done in UTC to ensure accuracy. Small differences (under 2 minutes) are normal due to network latency.
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testTimeLock() {
+            const unlockInput = document.getElementById('unlockTime');
+            const resultDiv = document.getElementById('timeLockResult');
+            
+            if (!unlockInput.value) {
+                resultDiv.innerHTML = '<div class="result error">Please select an unlock time</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result info">⏳ Testing time lock...</div>';
+            
+            try {
+                const { time: serverTimeStr } = await getRealTime();
+                const serverTime = new Date(serverTimeStr);
+                const unlockTime = new Date(unlockInput.value);
+                
+                const canAccess = serverTime >= unlockTime;
+                const diff = unlockTime - serverTime;
+                const diffMinutes = Math.floor(diff / 1000 / 60);
+                const diffSeconds = Math.floor((diff / 1000) % 60);
+                
+                if (canAccess) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <strong>Status:</strong> ✅ UNLOCKED<br>
+                            <strong>Server Time:</strong> ${serverTime.toLocaleString()}<br>
+                            <strong>Unlock Time:</strong> ${unlockTime.toLocaleString()}<br>
+                            <strong>Result:</strong> Access would be granted
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>Status:</strong> 🔒 LOCKED<br>
+                            <strong>Server Time:</strong> ${serverTime.toLocaleString()}<br>
+                            <strong>Unlock Time:</strong> ${unlockTime.toLocaleString()}<br>
+                            <strong>Time Remaining:</strong> ${diffMinutes}m ${diffSeconds}s<br>
+                            <strong>Result:</strong> Access would be denied
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Set default unlock time to 1 minute from now
+        window.onload = function() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 1);
+            const dateTimeStr = now.toISOString().slice(0, 16);
+            document.getElementById('unlockTime').value = dateTimeStr;
+        };
+    </script>
+</body>
+</html>

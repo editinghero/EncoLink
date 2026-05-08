@@ -507,7 +507,12 @@ class SecureLinkApp {
                 this.showToast('Please select unlock date and time', 'error');
                 return;
             }
-            timelockData = { type: 'datetime', unlock: datetime };
+            timelockData = { 
+                type: 'datetime', 
+                unlock: datetime,
+                timezone: this.getUserTimezone(),
+                offset: this.getTimezoneOffset()
+            };
         } else {
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
@@ -515,7 +520,13 @@ class SecureLinkApp {
                 this.showToast('Please select time window', 'error');
                 return;
             }
-            timelockData = { type: 'daily', start: startTime, end: endTime };
+            timelockData = { 
+                type: 'daily', 
+                start: startTime, 
+                end: endTime,
+                timezone: this.getUserTimezone(),
+                offset: this.getTimezoneOffset()
+            };
         }
 
         this.setButtonLoading('encryptTimelockBtn', true);
@@ -526,7 +537,7 @@ class SecureLinkApp {
             const encodedData = encodeURIComponent(encrypted);
             const secureLink = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
             
-            this.showResults([{ original: url, encrypted: secureLink, timelock: true }]);
+            this.showResults([{ original: url, encrypted: secureLink, timelock: true, timelockData }]);
             urlInput.value = '';
             passwordInput.value = '';
         } catch (error) {
@@ -572,9 +583,9 @@ class SecureLinkApp {
             }
 
             if (timelockData) {
-                const canAccess = this.checkTimelockAccess(timelockData);
+                const canAccess = await this.checkTimelockAccess(timelockData);
                 if (!canAccess) {
-                    this.showTimelockBlocked(timelockData);
+                    await this.showTimelockBlocked(timelockData);
                     return;
                 }
             }
@@ -592,88 +603,196 @@ class SecureLinkApp {
         }
     }
 
-    checkTimelockAccess(timelockData) {
-        const now = new Date();
-        
-        if (timelockData.type === 'datetime') {
-            const unlockTime = new Date(timelockData.unlock);
-            return now >= unlockTime;
-        } else if (timelockData.type === 'daily') {
-            const currentTime = now.getHours() * 60 + now.getMinutes();
-            const [startH, startM] = timelockData.start.split(':').map(Number);
-            const [endH, endM] = timelockData.end.split(':').map(Number);
-            const startTime = startH * 60 + startM;
-            const endTime = endH * 60 + endM;
-            return currentTime >= startTime && currentTime <= endTime;
+    async checkTimelockAccess(timelockData) {
+        try {
+            // Get real time from server to prevent client-side manipulation
+            const realTime = await this.getRealTime();
+            const now = new Date(realTime);
+            
+            if (timelockData.type === 'datetime') {
+                const unlockTime = new Date(timelockData.unlock);
+                return now >= unlockTime;
+            } else if (timelockData.type === 'daily') {
+                const currentTime = now.getHours() * 60 + now.getMinutes();
+                const [startH, startM] = timelockData.start.split(':').map(Number);
+                const [endH, endM] = timelockData.end.split(':').map(Number);
+                const startTime = startH * 60 + startM;
+                const endTime = endH * 60 + endM;
+                return currentTime >= startTime && currentTime <= endTime;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Failed to verify time:', error);
+            this.showToast('Unable to verify time. Please check your internet connection.', 'error');
+            return false;
         }
-        
-        return true;
     }
 
-    showTimelockBlocked(timelockData) {
+    async getRealTime() {
+        // Try multiple time APIs for reliability
+        const timeAPIs = [
+            { url: 'https://worldtimeapi.org/api/ip', type: 'worldtime' },
+            { url: 'https://timeapi.io/api/time/current/zone?timeZone=UTC', type: 'timeapi' },
+            { url: 'http://worldclockapi.com/api/json/utc/now', type: 'worldclock' }
+        ];
+
+        for (const api of timeAPIs) {
+            try {
+                const response = await fetch(api.url, { 
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+                
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                // Parse response based on API and ensure UTC format
+                let dateTimeStr;
+                if (api.type === 'worldtime') {
+                    // WorldTimeAPI returns datetime in ISO format with timezone
+                    dateTimeStr = data.datetime;
+                } else if (api.type === 'timeapi') {
+                    // TimeAPI.io returns UTC time, ensure it's treated as UTC
+                    dateTimeStr = data.dateTime;
+                    // If it doesn't have timezone info, add Z for UTC
+                    if (!dateTimeStr.includes('Z') && !dateTimeStr.includes('+') && !dateTimeStr.includes('-', 10)) {
+                        dateTimeStr = dateTimeStr + 'Z';
+                    }
+                } else if (api.type === 'worldclock') {
+                    // WorldClockAPI returns UTC time
+                    dateTimeStr = data.currentDateTime;
+                    if (!dateTimeStr.includes('Z') && !dateTimeStr.includes('+')) {
+                        dateTimeStr = dateTimeStr + 'Z';
+                    }
+                }
+                
+                return dateTimeStr;
+            } catch (error) {
+                console.warn(`Failed to fetch from ${api.url}:`, error);
+                continue;
+            }
+        }
+        
+        // If all APIs fail, throw error - don't fall back to client time
+        throw new Error('Unable to verify time from server');
+    }
+
+    getUserTimezone() {
+        try {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (error) {
+            return 'UTC';
+        }
+    }
+
+    getTimezoneOffset() {
+        const offset = -new Date().getTimezoneOffset();
+        const hours = Math.floor(Math.abs(offset) / 60);
+        const minutes = Math.abs(offset) % 60;
+        const sign = offset >= 0 ? '+' : '-';
+        return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    async showTimelockBlocked(timelockData) {
         const statusDiv = document.getElementById('timelockStatus');
         const titleEl = document.getElementById('timelockTitle');
         const messageEl = document.getElementById('timelockMessage');
         const countdownDiv = document.getElementById('timelockCountdown');
         
+        // Get user's timezone info
+        const userTimezone = this.getUserTimezone();
+        const timezoneOffset = this.getTimezoneOffset();
+        
         if (timelockData.type === 'datetime') {
             const unlockTime = new Date(timelockData.unlock);
-            titleEl.textContent = 'Link Time-Locked';
-            messageEl.textContent = `This link will be available on ${unlockTime.toLocaleString()}`;
+            titleEl.textContent = 'Link Time-Locked 🔒';
+            messageEl.innerHTML = `
+                This link will be available on:<br>
+                <strong>${unlockTime.toLocaleString()}</strong><br>
+                <small style="color: var(--color-text-secondary);">Your timezone: ${userTimezone} (${timezoneOffset})</small>
+            `;
             
-            // Calculate time remaining
-            const updateCountdown = () => {
-                const now = new Date();
-                const diff = unlockTime - now;
-                
-                if (diff <= 0) {
-                    countdownDiv.innerHTML = '<div style="color: var(--color-success); font-weight: 600;">Link is now available! Click Check Again.</div>';
-                    return;
+            // Calculate time remaining using server time
+            const updateCountdown = async () => {
+                try {
+                    const realTime = await this.getRealTime();
+                    const now = new Date(realTime);
+                    const diff = unlockTime - now;
+                    
+                    if (diff <= 0) {
+                        countdownDiv.innerHTML = '<div style="color: var(--color-success); font-weight: 600;">✅ Link is now available! Click Check Again.</div>';
+                        if (this.timelockInterval) {
+                            clearInterval(this.timelockInterval);
+                        }
+                        return;
+                    }
+                    
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    let timeString = '';
+                    if (days > 0) timeString += `${days}d `;
+                    if (hours > 0 || days > 0) timeString += `${hours}h `;
+                    if (minutes > 0 || hours > 0 || days > 0) timeString += `${minutes}m `;
+                    timeString += `${seconds}s`;
+                    
+                    countdownDiv.innerHTML = `
+                        <div style="font-size: 32px; font-weight: bold; color: var(--color-primary); margin-bottom: 8px;">${timeString}</div>
+                        <div style="font-size: 14px; color: var(--color-text-secondary);">Time remaining until unlock (verified server time)</div>
+                    `;
+                } catch (error) {
+                    countdownDiv.innerHTML = `
+                        <div style="color: var(--color-error); font-size: 14px;">
+                            ⚠️ Unable to verify time from server. Please check your internet connection.
+                        </div>
+                    `;
                 }
-                
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                let timeString = '';
-                if (days > 0) timeString += `${days}d `;
-                if (hours > 0 || days > 0) timeString += `${hours}h `;
-                if (minutes > 0 || hours > 0 || days > 0) timeString += `${minutes}m `;
-                timeString += `${seconds}s`;
-                
-                countdownDiv.innerHTML = `
-                    <div style="font-size: 32px; font-weight: bold; color: var(--color-primary); margin-bottom: 8px;">${timeString}</div>
-                    <div style="font-size: 14px; color: var(--color-text-secondary);">Time remaining until unlock</div>
-                `;
             };
             
-            updateCountdown();
-            this.timelockInterval = setInterval(updateCountdown, 1000);
+            await updateCountdown();
+            // Update every 30 seconds to reduce API calls
+            this.timelockInterval = setInterval(updateCountdown, 30000);
         } else {
-            titleEl.textContent = 'Outside Time Window';
-            messageEl.textContent = `This link is only available between ${timelockData.start} and ${timelockData.end}`;
-            
-            // Calculate time until next available window
-            const now = new Date();
-            const currentTime = now.getHours() * 60 + now.getMinutes();
-            const [startH, startM] = timelockData.start.split(':').map(Number);
-            const startTime = startH * 60 + startM;
-            
-            let minutesUntil;
-            if (currentTime < startTime) {
-                minutesUntil = startTime - currentTime;
-            } else {
-                minutesUntil = (24 * 60) - currentTime + startTime;
-            }
-            
-            const hours = Math.floor(minutesUntil / 60);
-            const minutes = minutesUntil % 60;
-            
-            countdownDiv.innerHTML = `
-                <div style="font-size: 32px; font-weight: bold; color: var(--color-primary); margin-bottom: 8px;">${hours}h ${minutes}m</div>
-                <div style="font-size: 14px; color: var(--color-text-secondary);">Until next available window</div>
+            titleEl.textContent = 'Outside Time Window ⏰';
+            messageEl.innerHTML = `
+                This link is only available between:<br>
+                <strong>${timelockData.start} - ${timelockData.end}</strong><br>
+                <small style="color: var(--color-text-secondary);">Your timezone: ${userTimezone} (${timezoneOffset})</small>
             `;
+            
+            // Calculate time until next available window using server time
+            try {
+                const realTime = await this.getRealTime();
+                const now = new Date(realTime);
+                const currentTime = now.getHours() * 60 + now.getMinutes();
+                const [startH, startM] = timelockData.start.split(':').map(Number);
+                const startTime = startH * 60 + startM;
+                
+                let minutesUntil;
+                if (currentTime < startTime) {
+                    minutesUntil = startTime - currentTime;
+                } else {
+                    minutesUntil = (24 * 60) - currentTime + startTime;
+                }
+                
+                const hours = Math.floor(minutesUntil / 60);
+                const minutes = minutesUntil % 60;
+                
+                countdownDiv.innerHTML = `
+                    <div style="font-size: 32px; font-weight: bold; color: var(--color-primary); margin-bottom: 8px;">${hours}h ${minutes}m</div>
+                    <div style="font-size: 14px; color: var(--color-text-secondary);">Until next available window (verified server time)</div>
+                `;
+            } catch (error) {
+                countdownDiv.innerHTML = `
+                    <div style="color: var(--color-error); font-size: 14px;">
+                        ⚠️ Unable to verify time from server. Please check your internet connection.
+                    </div>
+                `;
+            }
         }
         
         statusDiv.style.display = 'block';
@@ -717,18 +836,43 @@ class SecureLinkApp {
         const resultsSection = document.getElementById('resultsSection');
         const resultsDiv = document.getElementById('encryptionResults');
         
-        resultsDiv.innerHTML = results.map(r => `
-            <div style="margin-bottom: 20px; padding: 16px; background: var(--color-secondary); border-radius: var(--radius-lg); border: 1px solid var(--color-border);">
-                <div style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-secondary);">Original URL:</div>
-                <div style="margin-bottom: 12px; word-break: break-all; font-size: 13px;">${r.original}</div>
-                <div style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-secondary);">Encrypted Link${r.timelock ? ' (Time-Locked)' : ''}:</div>
-                <div style="margin-bottom: 12px; word-break: break-all; font-size: 13px; color: var(--color-primary);">${r.encrypted}</div>
-                <button onclick="navigator.clipboard.writeText('${r.encrypted}').then(() => app.showToast('Copied!', 'success'))" 
-                        style="padding: 8px 16px; background: var(--color-primary); color: var(--color-btn-primary-text); border: none; border-radius: var(--radius-full); cursor: pointer; font-size: 13px;">
-                    Copy Link
-                </button>
-            </div>
-        `).join('');
+        resultsDiv.innerHTML = results.map(r => {
+            let timelockInfo = '';
+            if (r.timelock && r.timelockData) {
+                if (r.timelockData.type === 'datetime') {
+                    const unlockDate = new Date(r.timelockData.unlock);
+                    timelockInfo = `
+                        <div style="margin-top: 12px; padding: 12px; background: var(--color-primary); background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">🔒 Time Lock Active</div>
+                            <div style="font-size: 13px; font-weight: 600;">Unlocks: ${unlockDate.toLocaleString()}</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">Timezone: ${r.timelockData.timezone} (${r.timelockData.offset})</div>
+                        </div>
+                    `;
+                } else if (r.timelockData.type === 'daily') {
+                    timelockInfo = `
+                        <div style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">⏰ Daily Time Window</div>
+                            <div style="font-size: 13px; font-weight: 600;">Available: ${r.timelockData.start} - ${r.timelockData.end}</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px;">Timezone: ${r.timelockData.timezone} (${r.timelockData.offset})</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            return `
+                <div style="margin-bottom: 20px; padding: 16px; background: var(--color-secondary); border-radius: var(--radius-lg); border: 1px solid var(--color-border);">
+                    <div style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-secondary);">Original URL:</div>
+                    <div style="margin-bottom: 12px; word-break: break-all; font-size: 13px;">${r.original}</div>
+                    <div style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-secondary);">Encrypted Link${r.timelock ? ' (Time-Locked)' : ''}:</div>
+                    <div style="margin-bottom: 12px; word-break: break-all; font-size: 13px; color: var(--color-primary);">${r.encrypted}</div>
+                    ${timelockInfo}
+                    <button onclick="navigator.clipboard.writeText('${r.encrypted}').then(() => app.showToast('Copied!', 'success'))" 
+                            style="padding: 8px 16px; background: var(--color-primary); color: var(--color-btn-primary-text); border: none; border-radius: var(--radius-full); cursor: pointer; font-size: 13px; margin-top: 12px;">
+                        Copy Link
+                    </button>
+                </div>
+            `;
+        }).join('');
         
         resultsSection.style.display = 'block';
         resultsSection.scrollIntoView({ behavior: 'smooth' });
@@ -790,12 +934,12 @@ class SecureLinkApp {
         }
     }
 
-    checkAgain() {
+    async checkAgain() {
         if (this.timelockInterval) {
             clearInterval(this.timelockInterval);
         }
         document.getElementById('timelockStatus').style.display = 'none';
-        this.decrypt(true);
+        await this.decrypt(true);
     }
 
     backToHome() {

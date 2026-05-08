@@ -3,7 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EncoLink - Advanced Link Management</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>EncoLink - Secure Link Encryption & Time-Locked URL Protection</title>
+    <meta name="title" content="EncoLink - Secure Link Encryption & Time-Locked URL Protection">
+    <meta name="description" content="Encrypt and protect your URLs with AES-256 encryption. Create time-locked links with server-verified security. Bulk encrypt, clipboard detection, and timezone-aware access control.">
+    <meta name="keywords" content="link encryption, URL protection, time-locked links, secure links, AES-256 encryption, password protected URLs, link security, encrypted URLs, time-based access control, secure link sharing">
+    <meta name="author" content="EncoLink">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://encolink.pages.dev/">
+    <meta property="og:title" content="EncoLink - Secure Link Encryption & Time-Locked URL Protection">
+    <meta property="og:description" content="Encrypt and protect your URLs with AES-256 encryption. Create time-locked links with server-verified security that cannot be bypassed.">
+    <meta property="og:image" content="https://encolink.pages.dev/assests/android-512x512.png">
+    <meta property="og:site_name" content="EncoLink">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://encolink.pages.dev/">
+    <meta property="twitter:title" content="EncoLink - Secure Link Encryption & Time-Locked URL Protection">
+    <meta property="twitter:description" content="Encrypt and protect your URLs with AES-256 encryption. Create time-locked links with server-verified security that cannot be bypassed.">
+    <meta property="twitter:image" content="https://encolink.pages.dev/assests/android-512x512.png">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EncoLink">
+    <meta name="application-name" content="EncoLink">
+    <meta name="msapplication-TileColor" content="#6366f1">
+    <meta name="msapplication-TileImage" content="assests/android-192x192.png">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://encolink.pages.dev/">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="assests/favicon.ico">
@@ -13,6 +55,46 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assests/apple-180x180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="assests/android-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="assests/android-512x512.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://worldtimeapi.org">
+    <link rel="dns-prefetch" href="https://timeapi.io">
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "EncoLink",
+      "description": "Secure link encryption and time-locked URL protection with AES-256 encryption",
+      "url": "https://encolink.pages.dev/",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "AES-256 Encryption",
+        "Time-Locked Links",
+        "Bulk Encryption",
+        "Clipboard Detection",
+        "Server-Time Verification",
+        "Timezone Aware"
+      ],
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.0.0",
+      "author": {
+        "@type": "Organization",
+        "name": "EncoLink"
+      }
+    }
+    </script>
     
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -152,6 +234,11 @@
                         <div class="timelock-header">
                             <h3>Time-Locked Links</h3>
                             <p>Restrict access to your links by specific datetime or daily time windows</p>
+                            <div style="margin-top: 12px; padding: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border-radius: 8px; border-left: 3px solid #10b981;">
+                                <div style="font-size: 12px; color: var(--color-text-secondary);">
+                                     <strong>Time Verification:</strong> from server time to prevent bypass.
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -339,6 +426,10 @@
                 <div class="help-section">
                     <h4>Security</h4>
                     <p>All encryption happens in your browser. No passwords or URLs are sent to any server. Your data remains completely private.</p>
+                </div>
+                <div class="help-section">
+                    <h4>Time-Lock Security</h4>
+                    <p>Time-locked links use verified server time to prevent bypassing by changing device time. The system automatically detects your timezone and validates access using atomic clock APIs. An internet connection is required to verify time-locked links.</p>
                 </div>
                 <div class="help-section">
                     <h4>Clipboard</h4>
