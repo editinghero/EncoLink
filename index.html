@@ -139,6 +139,7 @@
                         <button class="tab-btn" data-mode="bulk">Bulk Encrypt</button>
                         <button class="tab-btn" data-mode="clipboard">From Clipboard</button>
                         <button class="tab-btn" data-mode="timelock">Time-Locked</button>
+                        <button class="tab-btn" data-mode="bookmarklet">Bookmarklet</button>
                     </div>
 
                     <!-- Single Link Mode -->
@@ -297,6 +298,33 @@
                             </button>
                         </div>
                     </div>
+                    </div>
+
+                    <!-- Bookmarklet Mode -->
+                    <div id="bookmarkletMode" class="glass-card mode-content">
+                        <div class="bookmarklet-header">
+                            <h3>Save Links Quickly</h3>
+                            <p>Drag the button below to your bookmarks bar. Click it anytime to securely encrypt and save the current page!</p>
+                        </div>
+                        <div style="margin: 20px 0; text-align: center;">
+                            <a href="#"
+                               id="bookmarkletBtn"
+                               class="btn" 
+                               style="display: inline-block; padding: 12px 24px; cursor: grab; background-color: var(--color-primary); color: white; border: none; font-weight: bold; border-radius: 8px; text-decoration: none;"
+                               title="Drag to Bookmarks Bar"
+                               onclick="return false;">
+                                EncoLinkDirect
+                            </a>
+                        </div>
+                        <div class="timelock-info" style="margin-top: 15px;">
+                            <strong>How to use:</strong>
+                            <ol style="margin-top: 10px; padding-left: 20px; text-align: left; line-height: 1.6;">
+                                <li>Ensure your bookmarks bar is visible (Ctrl+Shift+B / Cmd+Shift+B).</li>
+                                <li>Drag the button above to the bar.</li>
+                                <li>While on any website, click the bookmarklet to open EncoLink with the URL pre-filled.</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Results Section -->
@@ -304,7 +332,10 @@
                     <div class="glass-card">
                         <h3>Encryption Complete!</h3>
                         <div id="encryptionResults" class="encryption-results"></div>
+                        <div class="redirect-countdown" id="encryptRedirectCountdown" style="display:none; text-align:center; margin-top:20px; font-weight:bold;"></div>
                         <div class="results-actions">
+                            <button class="btn btn-primary" id="encryptGoNowBtn" style="display:none;">Go Now</button>
+                            <button class="btn btn-outline" id="encryptCancelRedirectBtn" style="display:none;">Cancel</button>
                             <button class="btn btn-secondary" id="newEncryptionBtn">Encrypt Another</button>
                         </div>
                     </div>

@@ -147,6 +147,10 @@ class SecureLinkApp {
         this.setupButton('newEncryptionBtn', () => this.newEncryption());
         this.setupButton('goNowBtn', () => this.goNow());
         this.setupButton('cancelRedirectBtn', () => this.cancelRedirect());
+        
+        // Encryption redirect buttons
+        this.setupButton('encryptGoNowBtn', () => this.goNowEncrypt());
+        this.setupButton('encryptCancelRedirectBtn', () => this.cancelEncryptRedirect());
 
         // Modals
         this.setupButton('settingsBtn', () => this.openModal('settingsModal'));
@@ -171,6 +175,13 @@ class SecureLinkApp {
         const bulkUrls = document.getElementById('bulkUrls');
         if (bulkUrls) {
             bulkUrls.addEventListener('input', () => this.updateBulkUrlCount());
+        }
+        
+        // Dynamically set bookmarklet URL based on current host
+        const bookmarkletBtn = document.getElementById('bookmarkletBtn');
+        if (bookmarkletBtn) {
+            const baseUrl = window.location.origin + window.location.pathname;
+            bookmarkletBtn.href = `javascript:(function(){var u=encodeURIComponent(location.href);var t=encodeURIComponent(document.title);window.open('${baseUrl}?save='+u+'&title='+t,'_blank');})();`;
         }
 
         // Enter key support
@@ -885,6 +896,68 @@ class SecureLinkApp {
             } catch (error) {
                 console.log('Auto-copy failed');
             }
+            
+            if (this.settings.autoRedirect) {
+                this.showEncryptRedirect(results[0].encrypted);
+            }
+        }
+    }
+
+    showEncryptRedirect(url) {
+        const countdownDiv = document.getElementById('encryptRedirectCountdown');
+        const goNowBtn = document.getElementById('encryptGoNowBtn');
+        const cancelBtn = document.getElementById('encryptCancelRedirectBtn');
+        
+        if (countdownDiv && goNowBtn && cancelBtn) {
+            countdownDiv.style.display = 'block';
+            goNowBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+            
+            let seconds = this.settings.redirectDelay;
+            countdownDiv.textContent = `Redirecting in ${seconds} seconds...`;
+            
+            this.encryptRedirectUrl = url;
+            
+            if (this.encryptRedirectInterval) {
+                clearInterval(this.encryptRedirectInterval);
+            }
+            
+            this.encryptRedirectInterval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(this.encryptRedirectInterval);
+                    window.location.href = url;
+                } else {
+                    countdownDiv.textContent = `Redirecting in ${seconds} seconds...`;
+                }
+            }, 1000);
+        }
+    }
+
+    clearEncryptRedirect() {
+        if (this.encryptRedirectInterval) {
+            clearInterval(this.encryptRedirectInterval);
+        }
+        const countdownDiv = document.getElementById('encryptRedirectCountdown');
+        const goNowBtn = document.getElementById('encryptGoNowBtn');
+        const cancelBtn = document.getElementById('encryptCancelRedirectBtn');
+        
+        if (countdownDiv) countdownDiv.style.display = 'none';
+        if (goNowBtn) goNowBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.style.display = 'none';
+    }
+
+    cancelEncryptRedirect() {
+        this.clearEncryptRedirect();
+        this.showToast('Redirect cancelled', 'info');
+    }
+
+    goNowEncrypt() {
+        if (this.encryptRedirectInterval) {
+            clearInterval(this.encryptRedirectInterval);
+        }
+        if (this.encryptRedirectUrl) {
+            window.location.href = this.encryptRedirectUrl;
         }
     }
 
@@ -931,6 +1004,14 @@ class SecureLinkApp {
         if (urlParams.has('data')) {
             document.getElementById('encryptionPage').classList.remove('active');
             document.getElementById('decryptionPage').classList.add('active');
+        } else if (urlParams.has('save')) {
+            const saveUrl = urlParams.get('save');
+            const urlInput = document.getElementById('singleUrl');
+            if (urlInput) {
+                urlInput.value = saveUrl;
+                urlInput.dispatchEvent(new Event('input'));
+            }
+            this.switchMode('single');
         }
     }
 
@@ -965,6 +1046,7 @@ class SecureLinkApp {
     }
 
     newEncryption() {
+        this.clearEncryptRedirect();
         document.getElementById('resultsSection').style.display = 'none';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
